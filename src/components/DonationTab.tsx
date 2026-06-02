@@ -18,7 +18,10 @@ export const DonationTab = ({ onAddDonation, totalTarget, totalCollected, propos
   useEffect(() => {
     fetch(`${API}/api/rab`)
       .then(r => r.json())
-      .then(setRabData)
+      .then(data => {
+        console.log('RAB DATA:', data);
+        setRabData(data);
+      })
       .catch(console.error);
   }, []);
 
