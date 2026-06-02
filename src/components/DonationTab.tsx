@@ -18,10 +18,7 @@ export const DonationTab = ({ onAddDonation, totalTarget, totalCollected, propos
   useEffect(() => {
     fetch(`${API}/api/rab`)
       .then(r => r.json())
-      .then(data => {
-        console.log('RAB DATA:', data);
-        setRabData(data);
-      })
+      .then(setRabData)
       .catch(console.error);
   }, []);
 
@@ -45,7 +42,6 @@ export const DonationTab = ({ onAddDonation, totalTarget, totalCollected, propos
     }, 3000);
   };
 
-  // Warna per kategori
   const colors = ['bg-green-500', 'bg-blue-500', 'bg-orange-500', 'bg-purple-500', 'bg-pink-500'];
   const textColors = ['text-green-600', 'text-blue-600', 'text-orange-600', 'text-purple-600', 'text-pink-600'];
   const labels = ['A', 'B', 'C', 'D', 'E'];
@@ -56,8 +52,6 @@ export const DonationTab = ({ onAddDonation, totalTarget, totalCollected, propos
       {/* Progress Dana Per Kategori RAB */}
       <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 space-y-3">
         <h3 className="font-bold text-gray-800 text-sm">📊 Capaian Dana per Kategori</h3>
-
-        {/* Total keseluruhan */}
         <div>
           <div className="flex justify-between text-xs mb-1">
             <span className="font-bold text-gray-700">Total Keseluruhan</span>
@@ -71,15 +65,13 @@ export const DonationTab = ({ onAddDonation, totalTarget, totalCollected, propos
           </div>
           <div className="flex justify-between text-[10px] text-gray-400 mt-1">
             <span>Rp {totalCollected?.toLocaleString('id-ID')}</span>
-            <span>Target: Rp {rabData.totalRAB?.toLocaleString('id-ID') || totalTarget?.toLocaleString('id-ID')}</span>
+            <span>Target: Rp {(rabData.totalRAB || totalTarget)?.toLocaleString('id-ID')}</span>
           </div>
         </div>
 
-        {/* Per Kategori */}
         {rabData.kategori?.length > 0 && (
           <div className="space-y-2 pt-2 border-t">
             {rabData.kategori.map((kat: any, idx: number) => {
-              const persen = kat.total > 0 ? Math.min(Math.round((totalCollected / rabData.totalRAB) * 100), 100) : 0;
               const color = colors[idx % colors.length];
               const textColor = textColors[idx % textColors.length];
               const label = labels[idx] || (idx + 1).toString();
@@ -108,7 +100,7 @@ export const DonationTab = ({ onAddDonation, totalTarget, totalCollected, propos
         )}
 
         {rabData.kategori?.length === 0 && (
-          <p className="text-center text-gray-400 text-xs py-2">Belum ada target anggaran. Input di Dashboard Admin.</p>
+          <p className="text-center text-gray-400 text-xs py-2">Belum ada target anggaran.</p>
         )}
       </div>
 
@@ -132,21 +124,18 @@ export const DonationTab = ({ onAddDonation, totalTarget, totalCollected, propos
         </div>
       ) : (
         <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 space-y-4">
-
           <div>
             <label className="text-xs font-semibold text-gray-600 mb-1 block">Nama Donatur</label>
             <input type="text" placeholder="Nama lengkap donatur"
               className={`w-full p-3 border rounded-xl text-sm transition-all ${nama ? 'border-green-400 bg-green-50' : 'border-gray-200'}`}
               value={nama} onChange={(e) => setNama(kapitalAwal(e.target.value))} />
           </div>
-
           <div>
             <label className="text-xs font-semibold text-gray-600 mb-1 block">Nomor HP/WhatsApp</label>
             <input type="text" placeholder="Nomor HP/WhatsApp"
               className={`w-full p-3 border rounded-xl text-sm transition-all ${wa ? 'border-green-400 bg-green-50' : 'border-gray-200'}`}
               value={wa} onChange={(e) => setWa(e.target.value)} />
           </div>
-
           {proposals && proposals.length > 0 && (
             <div>
               <label className="text-xs font-semibold text-gray-600 mb-1 block">Peruntukan Dana</label>
@@ -160,7 +149,6 @@ export const DonationTab = ({ onAddDonation, totalTarget, totalCollected, propos
               </select>
             </div>
           )}
-
           <div>
             <label className="text-xs font-semibold text-gray-600 mb-1 block">
               {tabType === 'monthly' ? 'Nominal Iuran per Bulan' : 'Jumlah Donasi'}
@@ -177,7 +165,6 @@ export const DonationTab = ({ onAddDonation, totalTarget, totalCollected, propos
                 }} />
             </div>
           </div>
-
           <div className="grid grid-cols-3 gap-2">
             {nominalList.map(n => (
               <button key={n} onClick={() => { setJumlah(n); setJumlahText(n.toLocaleString('id-ID')); }}
@@ -186,7 +173,6 @@ export const DonationTab = ({ onAddDonation, totalTarget, totalCollected, propos
               </button>
             ))}
           </div>
-
           <div>
             <label className="text-xs font-semibold text-gray-600 mb-2 block">Metode Pembayaran</label>
             <div className="flex gap-2">
@@ -198,12 +184,10 @@ export const DonationTab = ({ onAddDonation, totalTarget, totalCollected, propos
               ))}
             </div>
           </div>
-
           <button onClick={handleSubmit} disabled={!nama || !jumlah}
             className={`w-full p-4 rounded-2xl font-bold text-sm mt-2 transition-all ${nama && jumlah ? 'bg-orange-500 hover:bg-orange-600 text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>
             {tabType === 'monthly' ? '📅 Daftarkan Iuran Bulanan →' : '🕌 Ikat Niat, Siapkan Donasi →'}
           </button>
-
           <p className="text-center text-[10px] text-gray-400">
             Data donasi akan dicatat dan dapat dilihat di halaman transparansi
           </p>
