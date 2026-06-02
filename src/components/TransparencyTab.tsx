@@ -16,7 +16,6 @@ export const TransparencyTab: React.FC<TransparencyTabProps> = ({
   disbursements,
   totalTarget,
   totalCollected,
-  totalSpent,
 }) => {
   const [activeTab, setActiveTab] = useState<'keuangan' | 'donatur'>('keuangan');
   const [donorType, setDonorType] = useState<'monthly' | 'one-time'>('monthly');
@@ -27,6 +26,9 @@ export const TransparencyTab: React.FC<TransparencyTabProps> = ({
 
   const totalDisbursed = disbursements.reduce((acc, d) => acc + Number(d.amount), 0);
   const sisaKas = totalCollected - totalDisbursed;
+
+  const getInisial = (name: string) =>
+    name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
 
   const filteredDonors = donors
     .filter(d => d.type === donorType)
@@ -58,15 +60,15 @@ export const TransparencyTab: React.FC<TransparencyTabProps> = ({
             <div className="grid grid-cols-3 gap-3">
               <div className="bg-green-500 text-white rounded-2xl p-3 text-center">
                 <p className="text-[10px] opacity-80">Terkumpul</p>
-                <p className="font-bold text-sm mt-1">{formatRp(totalCollected)}</p>
+                <p className="font-bold text-xs mt-1">{formatRp(totalCollected)}</p>
               </div>
               <div className="bg-orange-500 text-white rounded-2xl p-3 text-center">
                 <p className="text-[10px] opacity-80">Disalurkan</p>
-                <p className="font-bold text-sm mt-1">{formatRp(totalDisbursed)}</p>
+                <p className="font-bold text-xs mt-1">{formatRp(totalDisbursed)}</p>
               </div>
               <div className="bg-blue-500 text-white rounded-2xl p-3 text-center">
                 <p className="text-[10px] opacity-80">Sisa Kas</p>
-                <p className="font-bold text-sm mt-1">{formatRp(sisaKas)}</p>
+                <p className="font-bold text-xs mt-1">{formatRp(sisaKas)}</p>
               </div>
             </div>
 
@@ -74,15 +76,17 @@ export const TransparencyTab: React.FC<TransparencyTabProps> = ({
             <div className="bg-white rounded-2xl p-4 shadow-sm">
               <div className="flex justify-between text-xs mb-2">
                 <span className="font-bold text-gray-700">Capaian Target Dana</span>
-                <span className="font-bold text-green-600">{Math.round((totalCollected / totalTarget) * 100)}%</span>
+                <span className="font-bold text-green-600">
+                  {totalTarget > 0 ? Math.round((totalCollected / totalTarget) * 100) : 0}%
+                </span>
               </div>
               <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
                 <div className="h-full bg-green-500 rounded-full transition-all"
-                  style={{ width: `${Math.min((totalCollected / totalTarget) * 100, 100)}%` }} />
+                  style={{ width: `${totalTarget > 0 ? Math.min((totalCollected / totalTarget) * 100, 100) : 0}%` }} />
               </div>
               <div className="flex justify-between text-[10px] text-gray-400 mt-1">
                 <span>{formatRp(totalCollected)}</span>
-                <span>Target: {formatRp(totalTarget)}</span>
+                <span>Target RAB: {formatRp(totalTarget)}</span>
               </div>
             </div>
 
@@ -152,26 +156,18 @@ export const TransparencyTab: React.FC<TransparencyTabProps> = ({
               filteredDonors.map(d => (
                 <div key={d.id} className="bg-white rounded-2xl p-4 shadow-sm">
                   <div className="flex items-center gap-3">
-                    {d.avatar ? (
-                      <img src={d.avatar} alt={d.name} className="w-12 h-12 rounded-full object-cover" />
-                    ) : (
-                      <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center font-bold text-green-800">
-                        {d.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
-                      </div>
-                    )}
+                    {/* Inisial nama, tanpa foto */}
+                    <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center font-bold text-green-800 flex-shrink-0 text-sm">
+                      {getInisial(d.name)}
+                    </div>
                     <div className="flex-1">
                       <p className="font-bold text-sm text-gray-800">{d.name}</p>
                       {d.phone && <p className="text-xs text-gray-500">{d.phone}</p>}
-                      <div className="flex gap-2 mt-1">
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${d.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                          {d.status === 'active' ? '✅ Aktif' : '⏸️ Tidak Aktif'}
+                      {d.type === 'monthly' && d.monthlyCommitment && (
+                        <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full mt-1 inline-block">
+                          {formatRp(d.monthlyCommitment)}/bln
                         </span>
-                        {d.type === 'monthly' && d.monthlyCommitment && (
-                          <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
-                            {formatRp(d.monthlyCommitment)}/bln
-                          </span>
-                        )}
-                      </div>
+                      )}
                     </div>
                     <div className="text-right">
                       <p className="font-bold text-green-600 text-sm">{formatRp(Number(d.totalContribution))}</p>
