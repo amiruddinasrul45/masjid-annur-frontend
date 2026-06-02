@@ -145,7 +145,7 @@ setDisbursements(await r7.json());
         />
       )}
 
-      {activeTab === 'keuangan' && (
+      {activeTab === 'profil' && (
         <TransparencyTab
           donors={[]}
           allocations={[]}
