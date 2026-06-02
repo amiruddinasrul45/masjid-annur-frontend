@@ -1,97 +1,194 @@
 import React, { useState } from 'react';
-import { Users, Search, User, CreditCard, Award, ShieldCheck, ChevronRight, ChevronLeft, X, Receipt } from 'lucide-react';
-import { Donor, Allocation, Disbursement, DonationRecord } from '../types';
-// Pastikan RiwayatDonasi diimpor jika kamu menggunakannya di sini
-// import { RiwayatDonasi } from './RiwayatDonasi'; 
 
 interface TransparencyTabProps {
-  donors: Donor[];
-  allocations: Allocation[];
-  disbursements: Disbursement[];
+  donors: any[];
+  allocations: any[];
+  disbursements: any[];
   totalTarget: number;
   totalCollected: number;
   totalSpent: number;
-  onAddDisbursement: (newDisb: Omit<Disbursement, 'id' | 'date' | 'status'>) => void;
-  onAddDonorPayment: (donorId: string, paymentRecord: DonationRecord) => void;
+  onAddDisbursement: (newDisb: any) => void;
+  onAddDonorPayment: (donorId: string, paymentRecord: any) => void;
 }
 
 export const TransparencyTab: React.FC<TransparencyTabProps> = ({
   donors,
-  allocations,
   disbursements,
   totalTarget,
   totalCollected,
   totalSpent,
-  onAddDisbursement,
-  onAddDonorPayment
 }) => {
-  const [currentSection, setCurrentSection] = useState<'transparansi' | 'donatur-list' | 'dashboard-khusus'>('donatur-list');
-  const [donorSubTab, setDonorSubTab] = useState<'one-time' | 'monthly'>('one-time');
-  const [selectedDonorProfile, setSelectedDonorProfile] = useState<Donor | null>(null);
-  const [personalDashboardDonorId, setPersonalDashboardDonorId] = useState<string | null>(null);
-  const [selectedAllocation, setSelectedAllocation] = useState<Allocation | null>(null);
-  const [selectedDisbursement, setSelectedDisbursement] = useState<Disbursement | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeCashFlowDetail, setActiveCashFlowDetail] = useState<'masuk' | 'keluar' | 'sisa' | null>(null);
-  const [cashFlowSearchQuery, setCashFlowSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState<'keuangan' | 'donatur'>('keuangan');
+  const [donorType, setDonorType] = useState<'monthly' | 'one-time'>('monthly');
+  const [search, setSearch] = useState('');
 
-  // Utility functions
-  const formattedRupiah = (val: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
-  
-  const formatIndonesianDateTime = (dateStr?: string) => {
-    if (!dateStr) return '';
-    const d = new Date(dateStr);
-    return isNaN(d.getTime()) ? dateStr : d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-  };
+  const formatRp = (val: number) =>
+    new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
 
-  const getInitials = (name: string) => name ? name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : '?';
+  const totalDisbursed = disbursements.reduce((acc, d) => acc + Number(d.amount), 0);
+  const sisaKas = totalCollected - totalDisbursed;
 
-  const renderInitialsCircle = (name: string, sizeClass: string = "h-9 w-9 text-xs") => (
-    <div className={`${sizeClass} rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold`}>
-      {getInitials(name)}
-    </div>
-  );
-
-  // Filter Logic
-  const activeMonthlyDonors = donors.filter(d => d.type === 'monthly' && d.name.toLowerCase().includes(searchQuery.toLowerCase()));
-  const oneTimeDonorsList = donors.filter(d => d.type === 'one-time' && d.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filteredDonors = donors
+    .filter(d => d.type === donorType)
+    .filter(d => d.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <div className="flex-1 flex flex-col">
       {/* Header */}
-      <div className="bg-deep text-white p-4 flex justify-center">
-        <div className="flex bg-slate-900/40 p-1 rounded-xl w-full max-w-[280px]">
-          <button onClick={() => setCurrentSection('donatur-list')} className={`flex-1 py-1.5 rounded-lg font-bold text-[11px] ${currentSection === 'donatur-list' ? 'bg-cream text-deep' : 'text-slate-300'}`}>Penyumbang</button>
-          <button onClick={() => setCurrentSection('transparansi')} className={`flex-1 py-1.5 rounded-lg font-bold text-[11px] ${currentSection === 'transparansi' ? 'bg-cream text-deep' : 'text-slate-300'}`}>Laporan Keuangan</button>
+      <div className="bg-deep text-white p-4">
+        <h2 className="font-bold text-sm text-center mb-3">💰 Transparansi Keuangan</h2>
+        <div className="flex bg-slate-900/40 p-1 rounded-xl">
+          <button onClick={() => setActiveTab('keuangan')}
+            className={`flex-1 py-2 rounded-lg font-bold text-xs transition-all ${activeTab === 'keuangan' ? 'bg-white text-deep' : 'text-slate-300'}`}>
+            📊 Laporan Keuangan
+          </button>
+          <button onClick={() => setActiveTab('donatur')}
+            className={`flex-1 py-2 rounded-lg font-bold text-xs transition-all ${activeTab === 'donatur' ? 'bg-white text-deep' : 'text-slate-300'}`}>
+            👥 Daftar Donatur
+          </button>
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 p-4 overflow-y-auto">
-        {currentSection === 'donatur-list' && !selectedDonorProfile && (
-           <div className="space-y-4">
-              {/* Tempatkan list donatur kamu di sini */}
-              <input 
-                className="w-full p-3 border rounded-2xl" 
-                placeholder="Cari Penyumbang..." 
-                onChange={(e) => setSearchQuery(e.target.value)} 
-              />
-              {/* Tambahkan map list kamu disini */}
-           </div>
+      <div className="flex-1 p-4 overflow-y-auto space-y-4">
+
+        {/* TAB LAPORAN KEUANGAN */}
+        {activeTab === 'keuangan' && (
+          <div className="space-y-4">
+            {/* Summary Cards */}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="bg-green-500 text-white rounded-2xl p-3 text-center">
+                <p className="text-[10px] opacity-80">Terkumpul</p>
+                <p className="font-bold text-sm mt-1">{formatRp(totalCollected)}</p>
+              </div>
+              <div className="bg-orange-500 text-white rounded-2xl p-3 text-center">
+                <p className="text-[10px] opacity-80">Disalurkan</p>
+                <p className="font-bold text-sm mt-1">{formatRp(totalDisbursed)}</p>
+              </div>
+              <div className="bg-blue-500 text-white rounded-2xl p-3 text-center">
+                <p className="text-[10px] opacity-80">Sisa Kas</p>
+                <p className="font-bold text-sm mt-1">{formatRp(sisaKas)}</p>
+              </div>
+            </div>
+
+            {/* Progress Bar Target */}
+            <div className="bg-white rounded-2xl p-4 shadow-sm">
+              <div className="flex justify-between text-xs mb-2">
+                <span className="font-bold text-gray-700">Capaian Target Dana</span>
+                <span className="font-bold text-green-600">{Math.round((totalCollected / totalTarget) * 100)}%</span>
+              </div>
+              <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-full bg-green-500 rounded-full transition-all"
+                  style={{ width: `${Math.min((totalCollected / totalTarget) * 100, 100)}%` }} />
+              </div>
+              <div className="flex justify-between text-[10px] text-gray-400 mt-1">
+                <span>{formatRp(totalCollected)}</span>
+                <span>Target: {formatRp(totalTarget)}</span>
+              </div>
+            </div>
+
+            {/* Riwayat Penyaluran Dana */}
+            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+              <div className="p-4 border-b">
+                <h3 className="font-bold text-gray-800 text-sm">💸 Riwayat Penyaluran Dana</h3>
+              </div>
+              {disbursements.length === 0 ? (
+                <p className="text-center text-gray-400 text-xs py-6">Belum ada penyaluran dana.</p>
+              ) : (
+                disbursements.map(d => (
+                  <div key={d.id} className="p-4 border-b last:border-0">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <p className="font-semibold text-sm text-gray-800">{d.recipient}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">{d.purpose?.substring(0, 60)}...</p>
+                        <div className="flex gap-2 mt-1">
+                          <span className="text-[10px] bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">{d.category}</span>
+                          <span className="text-[10px] text-gray-400">{new Date(d.date).toLocaleDateString('id-ID')}</span>
+                        </div>
+                        <p className="text-[10px] text-gray-400 mt-1">No. {d.proofInvoice}</p>
+                      </div>
+                      <div className="text-right ml-3">
+                        <p className="font-bold text-orange-600 text-sm">{formatRp(Number(d.amount))}</p>
+                        <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full">{d.status}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         )}
-        
-        {/* Tambahkan bagian Transparansi/Laporan keuangan lainnya sesuai struktur sebelumnya */}
-      </div>
 
-      {/* Modal Detail Transaksi (Pastikan ditutup dengan benar) */}
-      {selectedDisbursement && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-           <div className="bg-white p-6 rounded-3xl w-full max-w-sm">
-             <button onClick={() => setSelectedDisbursement(null)} className="mb-4">Tutup</button>
-             {/* Detail Isi Kuitansi */}
-           </div>
-        </div>
-      )}
+        {/* TAB DAFTAR DONATUR */}
+        {activeTab === 'donatur' && (
+          <div className="space-y-4">
+            {/* Search */}
+            <input type="text" value={search} onChange={e => setSearch(e.target.value)}
+              className="w-full border rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              placeholder="🔍 Cari donatur..." />
+
+            {/* Toggle Tipe Donatur */}
+            <div className="flex bg-gray-100 p-1 rounded-xl">
+              <button onClick={() => setDonorType('monthly')}
+                className={`flex-1 py-2 rounded-lg font-bold text-xs transition-all ${donorType === 'monthly' ? 'bg-white text-deep shadow-sm' : 'text-gray-500'}`}>
+                📅 Iuran Bulanan
+              </button>
+              <button onClick={() => setDonorType('one-time')}
+                className={`flex-1 py-2 rounded-lg font-bold text-xs transition-all ${donorType === 'one-time' ? 'bg-white text-deep shadow-sm' : 'text-gray-500'}`}>
+                💵 Donasi Sekali
+              </button>
+            </div>
+
+            {/* Summary */}
+            <div className="bg-green-50 rounded-2xl p-3 text-center">
+              <p className="text-xs text-green-700 font-medium">
+                {filteredDonors.length} donatur {donorType === 'monthly' ? 'iuran bulanan' : 'sekali bayar'}
+              </p>
+            </div>
+
+            {/* List Donatur */}
+            {filteredDonors.length === 0 ? (
+              <p className="text-center text-gray-400 text-sm py-6">Tidak ada donatur ditemukan.</p>
+            ) : (
+              filteredDonors.map(d => (
+                <div key={d.id} className="bg-white rounded-2xl p-4 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    {d.avatar ? (
+                      <img src={d.avatar} alt={d.name} className="w-12 h-12 rounded-full object-cover" />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center font-bold text-green-800">
+                        {d.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <p className="font-bold text-sm text-gray-800">{d.name}</p>
+                      {d.phone && <p className="text-xs text-gray-500">{d.phone}</p>}
+                      <div className="flex gap-2 mt-1">
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${d.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                          {d.status === 'active' ? '✅ Aktif' : '⏸️ Tidak Aktif'}
+                        </span>
+                        {d.type === 'monthly' && d.monthlyCommitment && (
+                          <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                            {formatRp(d.monthlyCommitment)}/bln
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-green-600 text-sm">{formatRp(Number(d.totalContribution))}</p>
+                      <p className="text-[10px] text-gray-400">Total donasi</p>
+                      {d.type === 'monthly' && d.totalMonthsCommit && (
+                        <p className="text-[10px] text-blue-600 font-medium">
+                          {d.monthsPaid}/{d.totalMonthsCommit} bln
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
