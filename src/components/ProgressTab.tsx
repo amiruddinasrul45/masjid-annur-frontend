@@ -111,7 +111,7 @@ export const ProgressTab: React.FC<ProgressTabProps> = ({
   // Form State
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState<'Struktur' | 'Kubah' | 'Finishing' | 'Fasilitas' | 'Lainnya'>('Struktur');
+  const [category, setCategory] = useState<'Masjid Utama' | 'Rumah Imam & Tempat Wudhu' | 'Gudang'>('Masjid Utama');
   const [reporter, setReporter] = useState('Haji Ahmad Mudzakir (Ketua)');
   const [percentageBefore, setPercentageBefore] = useState(60);
   const [percentageAfter, setPercentageAfter] = useState(75);
@@ -137,7 +137,7 @@ export const ProgressTab: React.FC<ProgressTabProps> = ({
     // Reset Form
     setTitle('');
     setDescription('');
-    setCategory('Struktur');
+    setCategory('Masjid Utama');
     setPercentageBefore(60);
     setPercentageAfter(75);
     setCustomPhotoUrl('');

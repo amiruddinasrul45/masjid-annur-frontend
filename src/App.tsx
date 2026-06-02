@@ -10,6 +10,7 @@ import { LaporanProgres } from './components/LaporanProgres';
 import { SliderKondisi } from './components/SliderKondisi';
 import { LoginPage } from './components/LoginPage';
 import { AdminDashboard } from './components/AdminDashboard';
+import { ProgressTab } from './components/ProgressTab';
 
 const API = 'https://masjid-annur-backend-production.up.railway.app';
 
@@ -62,6 +63,18 @@ export default function App() {
     } catch (e) { console.error(e); }
   };
 
+  const handleAddProgressReport = async (newReport: any) => {
+    try {
+      const id = 'prog_' + Date.now();
+      await fetch(`${API}/api/progress`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, ...newReport, date: new Date().toISOString().split('T')[0] }),
+      });
+      loadData();
+    } catch (e) { console.error(e); }
+  };
+
   const handleLogin = (adminData: any, token: string) => {
     setAdmin(adminData);
     setShowLogin(false);
@@ -73,10 +86,8 @@ export default function App() {
     setAdmin(null);
   };
 
-  // Halaman login
   if (showLogin) return <LoginPage onLogin={handleLogin} />;
 
-  // Halaman admin dashboard
   if (admin && window.location.pathname === '/admin') {
     return <AdminDashboard admin={admin} onLogout={handleLogout} />;
   }
@@ -114,12 +125,20 @@ export default function App() {
           <RiwayatDonasi data={daftarDonasi} />
         </div>
       )}
+
       {activeTab === 'donasi' && (
         <DonationTab
           onAddDonation={(data: any, amt: number) => handleAddDonation(data.name, amt)}
           totalTarget={1500000000}
           totalCollected={totalTerkumpul}
           proposals={proposals}
+        />
+      )}
+
+      {activeTab === 'progres' && (
+        <ProgressTab
+          progressReports={progressReports}
+          onAddProgressReport={handleAddProgressReport}
         />
       )}
     </MobileFrame>
