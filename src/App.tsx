@@ -22,6 +22,8 @@ export default function App() {
   const [proposals, setProposals] = useState<any[]>([]);
   const [progressReports, setProgressReports] = useState<any[]>([]);
   const [disbursements, setDisbursements] = useState<any[]>([]);
+  const [donors, setDonors] = useState<any[]>([]);
+const [allocations, setAllocations] = useState<any[]>([]);
   const [gallery, setGallery] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [admin, setAdmin] = useState<any>(null);
@@ -35,7 +37,7 @@ export default function App() {
 
   const loadData = async () => {
     try {
-      const [r1, r2, r3, r4, r5, r6, r7] = await Promise.all([
+      const [r1, r2, r3, r4, r5, r6, r7, r8, r9] = await Promise.all([
   fetch(`${API}/api/donasi`),
   fetch(`${API}/api/donasi/total`),
   fetch(`${API}/api/proposals`),
@@ -43,6 +45,8 @@ export default function App() {
   fetch(`${API}/api/gallery`),
   fetch(`${API}/api/notifications`),
   fetch(`${API}/api/disbursements`),
+  fetch(`${API}/api/donors`),
+  fetch(`${API}/api/allocations`),
 ]);
 setDaftarDonasi(await r1.json());
 setTotalTerkumpul((await r2.json()).total || 0);
@@ -51,6 +55,8 @@ setProgressReports(await r4.json());
 setGallery(await r5.json());
 setNotifications(await r6.json());
 setDisbursements(await r7.json());
+setDonors(await r8.json());
+setAllocations(await r9.json());
     } catch (e) { console.error(e); }
   };
 
@@ -146,9 +152,9 @@ setDisbursements(await r7.json());
       )}
 
       {activeTab === 'profil' && (
-        <TransparencyTab
-          donors={[]}
-          allocations={[]}
+  <TransparencyTab
+    donors={donors}
+    allocations={allocations}
           disbursements={disbursements}
           totalTarget={1500000000}
           totalCollected={totalTerkumpul}
