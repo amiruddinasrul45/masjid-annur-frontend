@@ -18,6 +18,8 @@ export const AdminDashboard = ({ admin, onLogout }: { admin: any, onLogout: () =
   const [formSub, setFormSub] = useState({ kategori_id: '', nama: '', nilai: '', keterangan: '' });
   const [showFormKategori, setShowFormKategori] = useState(false);
   const [showFormSub, setShowFormSub] = useState('');
+  const [editKategori, setEditKategori] = useState<any>(null);
+  const [editSub, setEditSub] = useState<any>(null);
   const [msg, setMsg] = useState('');
 
   const token = localStorage.getItem('token');
@@ -91,6 +93,14 @@ export const AdminDashboard = ({ admin, onLogout }: { admin: any, onLogout: () =
     showMsg('✅ Kategori berhasil ditambahkan!');
   };
 
+  const updateKategori = async () => {
+    if (!editKategori?.nama) return showMsg('❌ Isi nama kategori!');
+    await fetch(`${API}/api/rab/kategori/${editKategori.id}`, { method: 'PATCH', headers, body: JSON.stringify({ nama: kapitalAwal(editKategori.nama) }) });
+    setEditKategori(null);
+    loadData();
+    showMsg('✅ Kategori berhasil diupdate!');
+  };
+
   const submitSub = async (kategori_id: string) => {
     if (!formSub.nama || !formSub.nilai) return showMsg('❌ Isi nama dan nilai!');
     const nilaiBersih = Number(formSub.nilai.replace(/\./g, ''));
@@ -99,6 +109,15 @@ export const AdminDashboard = ({ admin, onLogout }: { admin: any, onLogout: () =
     setShowFormSub('');
     loadData();
     showMsg('✅ Sub kategori berhasil ditambahkan!');
+  };
+
+  const updateSub = async () => {
+    if (!editSub?.nama || !editSub?.nilai) return showMsg('❌ Isi nama dan nilai!');
+    const nilaiBersih = Number(String(editSub.nilai).replace(/\./g, ''));
+    await fetch(`${API}/api/rab/subkategori/${editSub.id}`, { method: 'PATCH', headers, body: JSON.stringify({ nama: kapitalAwal(editSub.nama), nilai: nilaiBersih, keterangan: editSub.keterangan }) });
+    setEditSub(null);
+    loadData();
+    showMsg('✅ Sub kategori berhasil diupdate!');
   };
 
   const hapusKategori = async (id: string) => {
@@ -352,7 +371,6 @@ export const AdminDashboard = ({ admin, onLogout }: { admin: any, onLogout: () =
               </button>
             </div>
 
-            {/* Total RAB */}
             <div className="bg-indigo-600 text-white rounded-xl p-6 mb-6">
               <p className="text-sm opacity-80">Total Target Anggaran (RAB)</p>
               <p className="text-3xl font-bold mt-1">Rp {rab.totalRAB?.toLocaleString('id-ID') || 0}</p>
@@ -364,8 +382,7 @@ export const AdminDashboard = ({ admin, onLogout }: { admin: any, onLogout: () =
               <div className="bg-white rounded-xl p-4 shadow-sm mb-4 border-2 border-green-200">
                 <h3 className="font-semibold text-gray-700 mb-3">Tambah Kategori Baru</h3>
                 <div className="flex gap-3">
-                  <input type="text" value={formKategori.nama}
-                    onChange={e => setFormKategori({ nama: e.target.value })}
+                  <input type="text" value={formKategori.nama} onChange={e => setFormKategori({ nama: e.target.value })}
                     className="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
                     placeholder="Nama kategori (contoh: Struktur Bangunan)" />
                   <button onClick={submitKategori} className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm">Simpan</button>
@@ -374,7 +391,6 @@ export const AdminDashboard = ({ admin, onLogout }: { admin: any, onLogout: () =
               </div>
             )}
 
-            {/* List Kategori */}
             {rab.kategori?.length === 0 && (
               <div className="bg-white rounded-xl p-8 text-center text-gray-400 shadow-sm">
                 <p className="text-4xl mb-3">📋</p>
@@ -387,41 +403,52 @@ export const AdminDashboard = ({ admin, onLogout }: { admin: any, onLogout: () =
               {rab.kategori?.map((kat: any) => (
                 <div key={kat.id} className="bg-white rounded-xl shadow-sm overflow-hidden">
                   {/* Header Kategori */}
-                  <div className="flex items-center justify-between p-4 bg-gray-50 border-b">
-                    <div>
-                      <h3 className="font-bold text-gray-800">{kat.nama}</h3>
-                      <p className="text-sm text-indigo-600 font-medium">Total: Rp {kat.total?.toLocaleString('id-ID')}</p>
+                  {editKategori?.id === kat.id ? (
+                    <div className="p-4 bg-yellow-50 border-b flex gap-3">
+                      <input type="text" value={editKategori.nama}
+                        onChange={e => setEditKategori({...editKategori, nama: e.target.value})}
+                        className="flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400" />
+                      <button onClick={updateKategori} className="bg-yellow-500 text-white px-4 py-2 rounded-lg text-sm">💾 Simpan</button>
+                      <button onClick={() => setEditKategori(null)} className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm">Batal</button>
                     </div>
-                    <div className="flex gap-2">
-                      <button onClick={() => { setShowFormSub(kat.id); setFormSub({ kategori_id: kat.id, nama: '', nilai: '', keterangan: '' }); }}
-                        className="bg-green-100 text-green-700 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-green-200">
-                        + Sub Kategori
-                      </button>
-                      <button onClick={() => hapusKategori(kat.id)}
-                        className="bg-red-100 text-red-600 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-red-200">
-                        🗑️ Hapus
-                      </button>
+                  ) : (
+                    <div className="flex items-center justify-between p-4 bg-gray-50 border-b">
+                      <div>
+                        <h3 className="font-bold text-gray-800">{kat.nama}</h3>
+                        <p className="text-sm text-indigo-600 font-medium">Total: Rp {kat.total?.toLocaleString('id-ID')}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <button onClick={() => setEditKategori({ id: kat.id, nama: kat.nama })}
+                          className="bg-yellow-100 text-yellow-700 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-yellow-200">
+                          ✏️ Edit
+                        </button>
+                        <button onClick={() => { setShowFormSub(kat.id); setFormSub({ kategori_id: kat.id, nama: '', nilai: '', keterangan: '' }); }}
+                          className="bg-green-100 text-green-700 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-green-200">
+                          + Sub
+                        </button>
+                        <button onClick={() => hapusKategori(kat.id)}
+                          className="bg-red-100 text-red-600 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-red-200">
+                          🗑️
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Form Tambah Sub Kategori */}
                   {showFormSub === kat.id && (
                     <div className="p-4 bg-green-50 border-b">
                       <h4 className="text-sm font-semibold text-gray-700 mb-3">Tambah Sub Kategori</h4>
                       <div className="space-y-2">
-                        <input type="text" value={formSub.nama}
-                          onChange={e => setFormSub({...formSub, nama: e.target.value})}
+                        <input type="text" value={formSub.nama} onChange={e => setFormSub({...formSub, nama: e.target.value})}
                           className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                          placeholder="Nama sub kategori (contoh: Pengecoran Pondasi)" />
+                          placeholder="Nama sub kategori" />
                         <div className="relative">
                           <span className="absolute left-3 top-2.5 text-gray-500 text-sm">Rp</span>
-                          <input type="text" value={formSub.nilai}
-                            onChange={e => setFormSub({...formSub, nilai: formatAngka(e.target.value)})}
+                          <input type="text" value={formSub.nilai} onChange={e => setFormSub({...formSub, nilai: formatAngka(e.target.value)})}
                             className="w-full border rounded-lg pl-8 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                            placeholder="Nilai anggaran (contoh: 50.000.000)" />
+                            placeholder="Nilai anggaran" />
                         </div>
-                        <input type="text" value={formSub.keterangan}
-                          onChange={e => setFormSub({...formSub, keterangan: e.target.value})}
+                        <input type="text" value={formSub.keterangan} onChange={e => setFormSub({...formSub, keterangan: e.target.value})}
                           className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                           placeholder="Keterangan (opsional)" />
                         <div className="flex gap-2">
@@ -438,18 +465,44 @@ export const AdminDashboard = ({ admin, onLogout }: { admin: any, onLogout: () =
                   ) : (
                     <div className="divide-y">
                       {kat.subkategori?.map((sub: any, idx: number) => (
-                        <div key={sub.id} className="flex items-center justify-between px-4 py-3">
-                          <div className="flex items-center gap-3">
-                            <span className="text-gray-400 text-sm w-6">{idx + 1}.</span>
-                            <div>
-                              <p className="text-sm font-medium text-gray-800">{sub.nama}</p>
-                              {sub.keterangan && <p className="text-xs text-gray-400">{sub.keterangan}</p>}
+                        <div key={sub.id}>
+                          {editSub?.id === sub.id ? (
+                            <div className="p-3 bg-yellow-50 space-y-2">
+                              <input type="text" value={editSub.nama} onChange={e => setEditSub({...editSub, nama: e.target.value})}
+                                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                                placeholder="Nama sub kategori" />
+                              <div className="relative">
+                                <span className="absolute left-3 top-2.5 text-gray-500 text-sm">Rp</span>
+                                <input type="text" value={formatAngka(String(editSub.nilai))}
+                                  onChange={e => setEditSub({...editSub, nilai: e.target.value.replace(/\./g, '')})}
+                                  className="w-full border rounded-lg pl-8 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                                  placeholder="Nilai anggaran" />
+                              </div>
+                              <input type="text" value={editSub.keterangan || ''} onChange={e => setEditSub({...editSub, keterangan: e.target.value})}
+                                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                                placeholder="Keterangan (opsional)" />
+                              <div className="flex gap-2">
+                                <button onClick={updateSub} className="bg-yellow-500 text-white px-4 py-2 rounded-lg text-sm">💾 Simpan</button>
+                                <button onClick={() => setEditSub(null)} className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm">Batal</button>
+                              </div>
                             </div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <p className="text-sm font-bold text-indigo-600">Rp {Number(sub.nilai).toLocaleString('id-ID')}</p>
-                            <button onClick={() => hapusSub(sub.id)} className="text-red-400 hover:text-red-600 text-xs">🗑️</button>
-                          </div>
+                          ) : (
+                            <div className="flex items-center justify-between px-4 py-3">
+                              <div className="flex items-center gap-3">
+                                <span className="text-gray-400 text-sm w-6">{idx + 1}.</span>
+                                <div>
+                                  <p className="text-sm font-medium text-gray-800">{sub.nama}</p>
+                                  {sub.keterangan && <p className="text-xs text-gray-400">{sub.keterangan}</p>}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <p className="text-sm font-bold text-indigo-600">Rp {Number(sub.nilai).toLocaleString('id-ID')}</p>
+                                <button onClick={() => setEditSub({ id: sub.id, nama: sub.nama, nilai: sub.nilai, keterangan: sub.keterangan })}
+                                  className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs hover:bg-yellow-200">✏️</button>
+                                <button onClick={() => hapusSub(sub.id)} className="bg-red-100 text-red-500 px-2 py-1 rounded text-xs hover:bg-red-200">🗑️</button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
