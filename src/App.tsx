@@ -11,6 +11,7 @@ import { SliderKondisi } from './components/SliderKondisi';
 import { LoginPage } from './components/LoginPage';
 import { AdminDashboard } from './components/AdminDashboard';
 import { ProgressTab } from './components/ProgressTab';
+import { TransparencyTab } from './components/TransparencyTab';
 
 const API = 'https://masjid-annur-backend-production.up.railway.app';
 
@@ -20,6 +21,7 @@ export default function App() {
   const [totalTerkumpul, setTotalTerkumpul] = useState(0);
   const [proposals, setProposals] = useState<any[]>([]);
   const [progressReports, setProgressReports] = useState<any[]>([]);
+  const [disbursements, setDisbursements] = useState<any[]>([]);
   const [gallery, setGallery] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [admin, setAdmin] = useState<any>(null);
@@ -33,20 +35,22 @@ export default function App() {
 
   const loadData = async () => {
     try {
-      const [r1, r2, r3, r4, r5, r6] = await Promise.all([
-        fetch(`${API}/api/donasi`),
-        fetch(`${API}/api/donasi/total`),
-        fetch(`${API}/api/proposals`),
-        fetch(`${API}/api/progress`),
-        fetch(`${API}/api/gallery`),
-        fetch(`${API}/api/notifications`),
-      ]);
-      setDaftarDonasi(await r1.json());
-      setTotalTerkumpul((await r2.json()).total || 0);
-      setProposals(await r3.json());
-      setProgressReports(await r4.json());
-      setGallery(await r5.json());
-      setNotifications(await r6.json());
+      const [r1, r2, r3, r4, r5, r6, r7] = await Promise.all([
+  fetch(`${API}/api/donasi`),
+  fetch(`${API}/api/donasi/total`),
+  fetch(`${API}/api/proposals`),
+  fetch(`${API}/api/progress`),
+  fetch(`${API}/api/gallery`),
+  fetch(`${API}/api/notifications`),
+  fetch(`${API}/api/disbursements`),
+]);
+setDaftarDonasi(await r1.json());
+setTotalTerkumpul((await r2.json()).total || 0);
+setProposals(await r3.json());
+setProgressReports(await r4.json());
+setGallery(await r5.json());
+setNotifications(await r6.json());
+setDisbursements(await r7.json());
     } catch (e) { console.error(e); }
   };
 
@@ -134,7 +138,26 @@ export default function App() {
           proposals={proposals}
         />
       )}
+      {activeTab === 'progres' && (
+        <ProgressTab
+          progressReports={progressReports}
+          onAddProgressReport={handleAddProgressReport}
+        />
+      )}
 
+      {activeTab === 'keuangan' && (
+        <TransparencyTab
+          donors={[]}
+          allocations={[]}
+          disbursements={disbursements}
+          totalTarget={1500000000}
+          totalCollected={totalTerkumpul}
+          totalSpent={0}
+          onAddDisbursement={() => {}}
+          onAddDonorPayment={() => {}}
+        />
+      )}      
+        
       {activeTab === 'progres' && (
         <ProgressTab
           progressReports={progressReports}
