@@ -104,7 +104,7 @@ export default function App() {
       {activeTab === 'beranda' && (
         <div className="p-4 bg-gray-50 min-h-screen space-y-4">
           <HeaderMasjid />
-          <ProgresPembangunan persentase={74} total={totalTerkumpul} target={1500000000} />
+          <ProgresPembangunan persentase={Math.round((totalTerkumpul / 1500000000) * 100)} total={totalTerkumpul} target={1500000000} />
           <div className="space-y-2">
             <TombolWakaf onClick={() => setActiveTab('donasi')} />
             {daftarDonasi.length > 0 && <AuditFeed latestDonation={daftarDonasi[0]} />}
