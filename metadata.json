@@ -1,0 +1,6 @@
+{
+  "name": "Progres Masjid An-Nur",
+  "description": "Aplikasi pelaporan progres pembangunan, pencapaian dana, transparansi, iuran bulanan dan donasi sekali bayar, serta dashboard khusus donatur Masjid An-Nur Perumahan Bumi Daya Indah.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
