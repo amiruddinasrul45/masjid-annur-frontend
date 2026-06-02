@@ -24,7 +24,7 @@ export default function App() {
   const [disbursements, setDisbursements] = useState<any[]>([]);
   const [rabTotal, setRabTotal] = useState(0);
   const [donors, setDonors] = useState<any[]>([]);
-const [allocations, setAllocations] = useState<any[]>([]);
+  const [allocations, setAllocations] = useState<any[]>([]);
   const [gallery, setGallery] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [admin, setAdmin] = useState<any>(null);
@@ -39,28 +39,28 @@ const [allocations, setAllocations] = useState<any[]>([]);
   const loadData = async () => {
     try {
       const [r1, r2, r3, r4, r5, r6, r7, r8, r9, r10] = await Promise.all([
-  fetch(`${API}/api/donasi`),
-  fetch(`${API}/api/donasi/total`),
-  fetch(`${API}/api/proposals`),
-  fetch(`${API}/api/progress`),
-  fetch(`${API}/api/gallery`),
-  fetch(`${API}/api/notifications`),
-  fetch(`${API}/api/disbursements`),
-  fetch(`${API}/api/donors`),
-  fetch(`${API}/api/allocations`),
-  fetch(`${API}/api/rab`),
-]);
-setDaftarDonasi(await r1.json());
-setTotalTerkumpul((await r2.json()).total || 0);
-setProposals(await r3.json());
-setProgressReports(await r4.json());
-setGallery(await r5.json());
-setNotifications(await r6.json());
-setDisbursements(await r7.json());
-setDonors(await r8.json());
-setAllocations(await r9.json());
-const rabData = await r10.json();
-setRabTotal(rabData.totalRAB || 0);
+        fetch(`${API}/api/donasi`),
+        fetch(`${API}/api/donasi/total`),
+        fetch(`${API}/api/proposals`),
+        fetch(`${API}/api/progress`),
+        fetch(`${API}/api/gallery`),
+        fetch(`${API}/api/notifications`),
+        fetch(`${API}/api/disbursements`),
+        fetch(`${API}/api/donors`),
+        fetch(`${API}/api/allocations`),
+        fetch(`${API}/api/rab`),
+      ]);
+      setDaftarDonasi(await r1.json());
+      setTotalTerkumpul((await r2.json()).total || 0);
+      setProposals(await r3.json());
+      setProgressReports(await r4.json());
+      setGallery(await r5.json());
+      setNotifications(await r6.json());
+      setDisbursements(await r7.json());
+      setDonors(await r8.json());
+      setAllocations(await r9.json());
+      const rabData = await r10.json();
+      setRabTotal(rabData.totalRAB || 0);
     } catch (e) { console.error(e); }
   };
 
@@ -148,6 +148,7 @@ setRabTotal(rabData.totalRAB || 0);
           proposals={proposals}
         />
       )}
+
       {activeTab === 'progres' && (
         <ProgressTab
           progressReports={progressReports}
@@ -156,22 +157,15 @@ setRabTotal(rabData.totalRAB || 0);
       )}
 
       {activeTab === 'profil' && (
-  <TransparencyTab
-    donors={donors}
-    allocations={allocations}
+        <TransparencyTab
+          donors={donors}
+          allocations={allocations}
           disbursements={disbursements}
           totalTarget={rabTotal || 1500000000}
           totalCollected={totalTerkumpul}
           totalSpent={0}
           onAddDisbursement={() => {}}
           onAddDonorPayment={() => {}}
-        />
-      )}      
-        
-      {activeTab === 'progres' && (
-        <ProgressTab
-          progressReports={progressReports}
-          onAddProgressReport={handleAddProgressReport}
         />
       )}
     </MobileFrame>
